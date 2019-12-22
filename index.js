@@ -12,7 +12,14 @@ class PCMf32toi16 extends Transform  {
     _transform(chunk, encoding, done) {
         let buf = Buffer.alloc(chunk.length/2);
         for(var i=0;i<chunk.length;i+=4) {  //we iterate 4 bytes at a time (32 bits)
-            buf.writeInt16LE(chunk.readFloatLE(i)*0x7FFF, i/2);
+            let sample = chunk.readFloatLE(i);
+            if(sample>1) {  //clamp clipping, just in case
+                sample = 1;
+            }
+            if(sample < -1) {
+                sample = -1;
+            }
+            buf.writeInt16LE(sample*0x7FFF, i/2);
         }
         this.push(buf);
         done();
